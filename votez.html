@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système de Vote</title>
+    <style>
+        body {
+            background-image: url('Fond.jpg');
+            background-size: cover;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        #voter-btn {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        #votes-list {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Système de Vote</h1>
+    <button id="voter-btn" onclick="voter()">Voter</button>
+    <div id="votes-list">
+        <h2>Résultats des Votes</h2>
+        <ul id="votes"></ul>
+    </div>
+
+    <script>
+        // Fonction pour voter
+        function voter() {
+            // Vérifier si une heure s'est écoulée depuis le dernier vote
+            if (localStorage.getItem('dernierVote')) {
+                var dernierVote = new Date(localStorage.getItem('dernierVote'));
+                var maintenant = new Date();
+                var differenceEnHeures = (maintenant - dernierVote) / (1000 * 60 * 60);
+                if (differenceEnHeures < 1) {
+                    alert('Vous ne pouvez voter qu\'une fois par heure.');
+                    return;
+                }
+            }
+
+            // Récupérer le nom de la personne votante
+            var nom = prompt('Entrez votre nom pour voter :');
+
+            // Mettre à jour le dernier vote dans le stockage local
+            localStorage.setItem('dernierVote', new Date());
+
+            // Récupérer les votes actuels du stockage local
+            var votes = JSON.parse(localStorage.getItem('votes')) || {};
+
+            // Incrémenter le nombre de votes pour cette personne
+            votes[nom] = (votes[nom] || 0) + 1;
+
+            // Mettre à jour les votes dans le stockage local
+            localStorage.setItem('votes', JSON.stringify(votes));
+
+            // Mettre à jour l'affichage des votes
+            afficherVotes(votes);
+        }
+
+        // Fonction pour afficher les votes
+        function afficherVotes(votes) {
+            var votesListe = document.getElementById('votes');
+            votesListe.innerHTML = '';
+            for (var personne in votes) {
+                var nombreDeVotes = votes[personne];
+                var listItem = document.createElement('li');
+                listItem.textContent = personne + ' : ' + nombreDeVotes + ' votes';
+                votesListe.appendChild(listItem);
+            }
+        }
+
+        // Récupérer les votes actuels lors du chargement de la page
+        var votesActuels = JSON.parse(localStorage.getItem('votes')) || {};
+        afficherVotes(votesActuels);
+
+        // Réinitialiser les votes le 22 de chaque mois
+        var maintenant = new Date();
+        var jourDuMois = maintenant.getDate();
+        if (jourDuMois === 22) {
+            localStorage.removeItem('votes');
+            alert('Les votes ont été réinitialisés pour un nouveau mois.');
+        }
+    </script>
+</body>
+</html>
